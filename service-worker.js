@@ -1,5 +1,5 @@
 /* The Interactive Notebook — offline helper. Change VERSION when images or icons change. */
-const VERSION = 'inb-v2';
+const VERSION = 'inb-v3';
 const SHELL = [
   './', 'index.html', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
@@ -8,7 +8,8 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' gets fresh copies from GitHub, not the browser's short-term copies.
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -27,9 +28,11 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
 
   // The app page: get the newest version when online (so updates arrive), use the saved copy when offline or slow.
+  // 'no-cache' always asks GitHub whether the page changed (a tiny check when it didn't), and slow classroom Wi-Fi
+  // gets 15 seconds. With no internet at all the saved copy opens right away.
   if (req.mode === 'navigate' || (url.origin === location.origin && url.pathname.endsWith('/index.html'))) {
     e.respondWith(
-      withTimeout(fetch(req), 6000)
+      withTimeout(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }), 15000)
         .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put('index.html', copy)); } return res; })
         .catch(() => caches.match('index.html').then((r) => r || caches.match('./')))
     );
