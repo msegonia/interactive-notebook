@@ -1,10 +1,11 @@
 /* The Interactive Notebook — offline helper. Change VERSION when images or icons change. */
-const VERSION = 'inb-v3';
+const VERSION = 'inb-v4';
 const SHELL = [
   './', 'index.html', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
   'img/signin-globe.webp', 'img/hdr-compass.webp', 'img/signin-plane.webp', 'img/corner-books.webp',
-  'img/signin-top.webp', 'img/hdr-home.webp', 'img/corner-compass.webp'
+  'img/signin-top.webp', 'img/hdr-home.webp', 'img/corner-compass.webp',
+  'img/splash.webp', 'img/bg-tall.webp', 'img/bg-wide.webp'
 ];
 
 self.addEventListener('install', (e) => {
