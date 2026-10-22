@@ -1,5 +1,5 @@
 /* The Interactive Notebook — offline helper. Change VERSION when images or icons change. */
-const VERSION = 'inb-v5';
+const VERSION = 'inb-v6';
 const SHELL = [
   './', 'index.html', 'manifest.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
@@ -39,6 +39,9 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
+
+  // version.json (is there a new version?): always ask GitHub, never a saved copy.
+  if (url.origin === location.origin && url.pathname.endsWith('/version.json')) { e.respondWith(fetch(req, { cache: 'no-store' })); return; }
 
   // Pictures, icons and the app's own files: saved copy first.
   if (url.origin === location.origin) {
