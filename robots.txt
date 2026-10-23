@@ -1,5 +1,5 @@
-# The Interactive Notebook is a private class app. Please don't list it in search results.
-# (Search engines read this file only at the top of a domain, so it starts working once the app has its own domain.
-#  Until then, the "noindex" line inside index.html does the same job.)
+# The Interactive Notebook is a private class app. Please don't list it in search results or AI answers.
+# Crawling is allowed on purpose: Google must be able to open the page to see its "noindex, nosnippet" line and
+# drop it from search. (A "Disallow" here would hide that line, and Google could keep the old listing.)
 User-agent: *
-Disallow: /
+Allow: /
