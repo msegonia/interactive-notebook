@@ -1,4 +1,5 @@
-/* The Interactive Notebook — offline helper. Change VERSION when images or icons change. */
+/* The Interactive Notebook — offline helper. Change VERSION when images or icons change.
+   Oct 29: also shows phone notifications (Firebase Cloud Messaging, sent by the Google Sheet's script) and opens the right screen when one is tapped. */
 const VERSION = 'inb-v6';
 const SHELL = [
   './', 'index.html', 'manifest.json',
@@ -61,4 +62,31 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   // Everything else (the Google Sheet, PDF reader) goes straight to the internet, never saved.
+});
+
+/* ---------- phone notifications (Oct 29) ----------
+   The Sheet's script sends a "data" message through Firebase: { title, body, tag, go, who }. This shows it.
+   The same tag replaces an older notification (for example several messages in one chat). */
+self.addEventListener('push', (e) => {
+  let p = {};
+  try { p = e.data ? e.data.json() : {}; } catch (err) { try { p = { data: { body: e.data.text() } }; } catch (x) {} }
+  const d = (p && (p.data || p.notification)) || p || {};
+  const title = d.title || 'The Interactive Notebook';
+  const opts = { body: d.body || '', icon: 'icons/icon-192.png', data: { go: d.go || 'home' } };
+  if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
+  e.waitUntil(self.registration.showNotification(title, opts));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const go = (e.notification.data && e.notification.data.go) || 'home';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    const mine = list.filter((c) => c.url && c.url.indexOf(self.registration.scope) === 0);
+    if (mine.length) {
+      const c = mine.find((x) => x.focused) || mine[0];
+      c.postMessage({ type: 'inb-go', go });
+      return c.focus ? c.focus() : undefined;
+    }
+    return self.clients.openWindow(new URL('./?go=' + encodeURIComponent(go), self.registration.scope).href);
+  }));
 });
