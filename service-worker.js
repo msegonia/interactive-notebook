@@ -74,7 +74,12 @@ self.addEventListener('push', (e) => {
   const title = d.title || 'The Interactive Notebook';
   const opts = { body: d.body || '', icon: 'icons/icon-192.png', data: { go: d.go || 'home' } };
   if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
-  e.waitUntil(self.registration.showNotification(title, opts));
+  // Doorbell: tags "ring:<id>" and repeats "ring:<id>:<n>". Each repeat closes the older one and comes as a fresh, ringing
+  // notification that stays until it is tapped or swiped away.
+  const ring = /^ring:[^:]+/.exec(opts.tag || '');
+  if (ring) { opts.requireInteraction = true; opts.vibrate = [400, 200, 400, 200, 400]; }
+  e.waitUntil((ring ? self.registration.getNotifications().then((list) => list.forEach((x) => { if (x.tag && x.tag.indexOf(ring[0]) === 0) x.close(); })) : Promise.resolve())
+    .catch(() => {}).then(() => self.registration.showNotification(title, opts)));
 });
 
 self.addEventListener('notificationclick', (e) => {
