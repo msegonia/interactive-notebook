@@ -41,8 +41,8 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // version.json (is there a new version?): always ask GitHub, never a saved copy.
-  if (url.origin === location.origin && url.pathname.endsWith('/version.json')) { e.respondWith(fetch(req, { cache: 'no-store' })); return; }
+  // version.json (is there a new version?) and app/app.json (Notebook app required? newest app?): always ask GitHub, never a saved copy.
+  if (url.origin === location.origin && (url.pathname.endsWith('/version.json') || url.pathname.endsWith('/app/app.json'))) { e.respondWith(fetch(req, { cache: 'no-store' })); return; }
 
   // Pictures, icons and the app's own files: saved copy first.
   if (url.origin === location.origin) {
